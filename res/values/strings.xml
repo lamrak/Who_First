@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Who is first</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title">Who is first?</string>
+    <string name="company_name">Validcat</string>
+    
+    <!-- Action -->
+    <string name="action_start">Start</string>
+	<string name="action_settings">Settings</string>
+	
+	<string name="hint_start">Just put yours fingers&#8230; and wait!</string>
+
+</resources>
