@@ -1,8 +1,12 @@
 package net.validcat.whofirst;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,7 +14,8 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.SparseArray;
+import android.os.Vibrator;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -19,73 +24,94 @@ import android.widget.TextView;
 
 public class TouchActivity extends Activity {
 	public static final String LOG_TAG = "TouchActivity";
-	private static final int MIN_DXDY = 2;
 	// Assume no more than 20 simultaneous touches
 	final private static int MAX_TOUCHES = 20;
 	// Pool of MarkerViews 
 	final private static LinkedList<MarkerView> markersPoll = new LinkedList<MarkerView>();
 	// Set of MarkerViews currently visible on the display
-	final private static SparseArray<MarkerView> activeMarkers = new SparseArray<MarkerView>();
+	@SuppressLint("UseSparseArrays")
+	final private static Map<Integer, MarkerView> activeMarkers = new HashMap<Integer, MarkerView>();
 	private static final long ONE_SECOND = 1000;
-	private FrameLayout mFrame;
+	private FrameLayout frame;
 	// Counter 
 	private TextView hintView;
 	private TextView contView;
 	private Handler handlerCounter = new Handler();
 	private boolean isFirstStart = true;
+	private boolean isGameEnd = false;
 	private int counter = 3;
-	private boolean isBreak = false;
+	private boolean isStopCounter = false;
+	// Random
+	private Random rnd;
+	private Vibrator vib;
+	private long[] patternTouch = {0, 100};
+	private long[] patternEnd = {0, 400, 200, 100, 300, 100};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.touch_activity);
-		mFrame = (FrameLayout) findViewById(R.id.frame);
 
+		rnd = new Random();
+		vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		
+		if (vib.hasVibrator()) {
+		    Log.v("Can Vibrate", "YES");
+		} else {
+		    Log.v("Can Vibrate", "NO");
+		}
 		// Initialize pool of View.
 		initUI();
 
 		// Create and set on touch listener
-		mFrame.setOnTouchListener(new OnTouchListener() {
+		frame.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 
 				switch (event.getActionMasked()) {
 					case MotionEvent.ACTION_DOWN:
 					case MotionEvent.ACTION_POINTER_DOWN: {
+						Log.i(LOG_TAG, "ACTION_DOWN");
 						if (isFirstStart) {
+							isGameEnd = false;
+							Log.i(LOG_TAG, "Start new game");
 							isFirstStart = false;
+							isStopCounter = false;
 							startCounter();
 						} else 
 							resetCounter();
+						
+						if (isGameEnd) break;
 						// Show new MarkerView
 						int pointerIndex = event.getActionIndex();
 						int pointerID = event.getPointerId(pointerIndex);
-	
 						MarkerView marker = markersPoll.remove();
-	
-						if (null != marker) {
-							activeMarkers.put(pointerID, marker);
-							marker.setXLoc(event.getX(pointerIndex));
-							marker.setYLoc(event.getY(pointerIndex));
-							mFrame.addView(marker);
-						}
+						if (marker == null) break;
+						activeMarkers.put(pointerID, marker);
+						marker.setXLoc(event.getX(pointerIndex));
+						marker.setYLoc(event.getY(pointerIndex));
+						frame.addView(marker);
+						vib.vibrate(patternTouch, -1);
 						break;
 					}
 					case MotionEvent.ACTION_UP:
 					case MotionEvent.ACTION_POINTER_UP: {
+						Log.i(LOG_TAG, "ACTION_UP");
 						// Remove one MarkerView
 						int pointerIndex = event.getActionIndex();
 						int pointerID = event.getPointerId(pointerIndex);
 						MarkerView marker = activeMarkers.get(pointerID);
+						if (marker == null) break;
 						activeMarkers.remove(pointerID);
-						if (null != marker) {
-							markersPoll.add(marker);
-							mFrame.removeView(marker);
+						markersPoll.add(marker);
+						frame.removeView(marker);
+						
+						if (activeMarkers.size() == 0) {
+							isGameEnd = false;
+							setDeafultState();
+							isStopCounter = true; // stop counter
 						}
 						
-						if (activeMarkers.size() == 0)
-							setDeafultState();
 						break;
 					}
 					case MotionEvent.ACTION_MOVE: {
@@ -93,19 +119,15 @@ public class TouchActivity extends Activity {
 						for (int idx = 0; idx < event.getPointerCount(); idx++) {
 							int ID = event.getPointerId(idx);
 							MarkerView marker = activeMarkers.get(ID);
-							if (null != marker) {
-								// Redraw only if finger has travel ed a minimum distance   
-								if (Math.abs(marker.getXLoc() - event.getX(idx)) > MIN_DXDY
-										|| Math.abs(marker.getYLoc() - event.getY(idx)) > MIN_DXDY) {
-									// Set new location and redraw
-									marker.setXLoc(event.getX(idx));
-									marker.setYLoc(event.getY(idx));
-									marker.invalidate();
-								}
-							}
+							if (marker == null) break;
+							marker.setXLoc(event.getX(idx));
+							marker.setYLoc(event.getY(idx));
+							marker.invalidate();
 						}
 						break;
 					}
+					case MotionEvent.ACTION_CANCEL:
+						Log.i(LOG_TAG, "ACTION_CANCEL");
 				}
 
 				return true;
@@ -114,12 +136,20 @@ public class TouchActivity extends Activity {
 	}
 
 	protected void setDeafultState() {
+		if (isFirstStart) return;
+		Log.i(LOG_TAG, "setDeafultState()");
+		// Make marker view inactive
+		for (Entry<Integer, MarkerView> entry : activeMarkers.entrySet()) {
+			markersPoll.add(entry.getValue());
+		}
+		activeMarkers.clear();
+		// Handle ui views
 		hintView.setVisibility(View.VISIBLE);
 		contView.setVisibility(View.GONE);
-		
+		// reset values to default state
 		counter = 3;
 		isFirstStart = true;
-		isBreak = true;
+		isStopCounter = false;
 	}
 
 	protected void resetCounter() {
@@ -131,15 +161,16 @@ public class TouchActivity extends Activity {
 		hintView.setVisibility(View.GONE);
 		contView.setVisibility(View.VISIBLE);
 		contView.setText(String.valueOf(counter));
-		isBreak = false;
-		
 		handlerCounter.postDelayed(new Runnable() {
 			
 			@Override
 			public void run() {
-				if (counter == 0 || isBreak) {
-					//TODO delete all except one marker
-					//TODO vibrate
+				if (isStopCounter) {
+					setDeafultState();
+					return;
+				}
+				if (counter == 1) {
+					selectWinner();
 					contView.setVisibility(View.GONE);
 					return;
 				}
@@ -149,8 +180,38 @@ public class TouchActivity extends Activity {
 		}, ONE_SECOND);
 	}
 
+	protected void selectWinner() {
+		int size = activeMarkers.size();
+		if (size == 0) {
+			Log.e(LOG_TAG, "Size is zero");
+			return;
+		}
+		int index = rnd.nextInt(size);
+		Log.i(LOG_TAG, "Random: " + index);
+		int winnerPointerId = 0;
+		for (Integer key : activeMarkers.keySet()) {
+			if (winnerPointerId == index) {
+				winnerPointerId = key;
+				break;
+			}
+			winnerPointerId++;
+		}
+		Log.i(LOG_TAG, "Random pointerId:" + winnerPointerId);
+		// Remove lost markers
+		for (Integer key : activeMarkers.keySet()) {
+			if (key == winnerPointerId) {
+				Log.d(LOG_TAG, "Skip winner. Id=" + winnerPointerId);
+				continue;
+			}
+			frame.removeView(activeMarkers.get(key));
+		}
+		isGameEnd = true;
+		vib.vibrate(patternEnd, -1);
+	}
+
 	private void initUI() {
 		// find ui 
+		frame = (FrameLayout) findViewById(R.id.frame);
 		hintView = (TextView) findViewById(R.id.tv_hint);
 		contView = (TextView) findViewById(R.id.tv_count);
 		
@@ -176,8 +237,6 @@ public class TouchActivity extends Activity {
 			mPaint.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
 		}
 
-		float getXLoc() {return x;}
-		float getYLoc() {return y;}
 		void setXLoc(float x) {this.x = x;}
 		void setYLoc(float y) {this.y = y;}
 
