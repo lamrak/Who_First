@@ -19,6 +19,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -41,11 +44,13 @@ public class TouchActivity extends Activity {
 	private boolean isGameEnd = false;
 	private int counter = 3;
 	private boolean isStopCounter = false;
+	// Animation
+	private Animation animimation;
 	// Random
 	private Random rnd;
 	private Vibrator vib;
 	private long[] patternTouch = {0, 100};
-	private long[] patternEnd = {0, 400, 200, 100, 300, 100};
+	private long[] patternEnd = {0, 200};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -62,12 +67,13 @@ public class TouchActivity extends Activity {
 		}
 		// Initialize pool of View.
 		initUI();
+		initAnimation();
 
 		// Create and set on touch listener
 		frame.setOnTouchListener(new OnTouchListener() {
+			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-
 				switch (event.getActionMasked()) {
 					case MotionEvent.ACTION_DOWN:
 					case MotionEvent.ACTION_POINTER_DOWN: {
@@ -78,8 +84,7 @@ public class TouchActivity extends Activity {
 							isFirstStart = false;
 							isStopCounter = false;
 							startCounter();
-						} else 
-							resetCounter();
+						} else resetCounter();
 						
 						if (isGameEnd) break;
 						// Show new MarkerView
@@ -135,6 +140,23 @@ public class TouchActivity extends Activity {
 		});
 	}
 
+	private void initAnimation() {
+		animimation = AnimationUtils.loadAnimation(this, R.anim.view_animation);
+		animimation.setAnimationListener(new AnimationListener() {
+			
+			@Override
+			public void onAnimationStart(Animation animation) {}
+			
+			@Override
+			public void onAnimationRepeat(Animation animation) {}
+			
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				contView.setText(String.valueOf(--counter));
+			}
+		});
+	}
+
 	protected void setDeafultState() {
 		if (isFirstStart) return;
 		Log.i(LOG_TAG, "setDeafultState()");
@@ -155,12 +177,15 @@ public class TouchActivity extends Activity {
 	protected void resetCounter() {
 		counter = 3; //TODO
 		contView.setText(String.valueOf(counter));
+		contView.startAnimation(animimation);
 	}
 
 	protected void startCounter() {
 		hintView.setVisibility(View.GONE);
 		contView.setVisibility(View.VISIBLE);
 		contView.setText(String.valueOf(counter));
+		contView.startAnimation(animimation);
+		
 		handlerCounter.postDelayed(new Runnable() {
 			
 			@Override
@@ -170,11 +195,13 @@ public class TouchActivity extends Activity {
 					return;
 				}
 				if (counter == 1) {
+					contView.startAnimation(animimation);
 					selectWinner();
 					contView.setVisibility(View.GONE);
 					return;
 				}
-				contView.setText(String.valueOf(--counter));
+//				contView.setText(String.valueOf(--counter));
+				contView.startAnimation(animimation);
 				handlerCounter.postDelayed(this, ONE_SECOND);
 			}
 		}, ONE_SECOND);
