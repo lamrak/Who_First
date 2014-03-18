@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.Paint.Style;
 import android.os.Bundle;
 import android.os.Handler;
@@ -84,7 +85,10 @@ public class TouchActivity extends Activity {
 							isFirstStart = false;
 							isStopCounter = false;
 							startCounter();
-						} else resetCounter();
+						} else {
+							if (isGameEnd) break;
+							resetCounter();
+						}
 						
 						if (isGameEnd) break;
 						// Show new MarkerView
@@ -176,8 +180,8 @@ public class TouchActivity extends Activity {
 
 	protected void resetCounter() {
 		counter = 3; //TODO
-		contView.setText(String.valueOf(counter));
-		contView.startAnimation(animimation);
+		handlerCounter.removeCallbacksAndMessages(null);
+		startCounter();
 	}
 
 	protected void startCounter() {
@@ -241,6 +245,8 @@ public class TouchActivity extends Activity {
 		frame = (FrameLayout) findViewById(R.id.frame);
 		hintView = (TextView) findViewById(R.id.tv_hint);
 		contView = (TextView) findViewById(R.id.tv_count);
+		
+        ((TextView) findViewById(R.id.tv_hint)).setTypeface(Typeface.createFromAsset(getAssets(), "fonts/clicker.ttf"));
 		
 		setDeafultState();
 		

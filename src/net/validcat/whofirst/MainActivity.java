@@ -3,8 +3,11 @@ package net.validcat.whofirst;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
@@ -12,9 +15,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        initUI();
     }
 
-    public void onClickStart(View v) {
+    private void initUI() {
+        ((TextView) findViewById(R.id.logo_text)).setTypeface(Typeface.createFromAsset(getAssets(), "fonts/clicker.ttf"));
+        ((TextView) findViewById(R.id.tv_title)).setTypeface(Typeface.createFromAsset(getAssets(), "fonts/fredoka.ttf"));
+        ((Button) findViewById(R.id.btn_start)).setTypeface(Typeface.createFromAsset(getAssets(), "fonts/fredoka.ttf"));
+        ((Button) findViewById(R.id.btn_settings)).setTypeface(Typeface.createFromAsset(getAssets(), "fonts/fredoka.ttf"));
+	}
+
+	public void onClickStart(View v) {
     	startActivity(new Intent(this, TouchActivity.class));
     }
     
@@ -35,12 +47,12 @@ public class MainActivity extends Activity {
 //TODO Graphics
 //TODO XML: Style
 //TODO more than 10 
-//TODO TouchActivity: Vibration patterns
+// TouchActivity: Vibration patterns
 //TODO TouchActivity: Colors array
-//TODO TouchActivity: Fingers size
-//TODO TouchActivity: Counter
-//TODO TouchActivity: Counter animation
-//TODO TouchActivity: No finger, reset Default
+// TouchActivity: Fingers size
+// TouchActivity: Counter
+// TouchActivity: Counter animation
+// TouchActivity: No finger, reset Default
 
 //TODO Settings: count 3,2,1
 //TODO Settings: color mode: array, random, black-white
