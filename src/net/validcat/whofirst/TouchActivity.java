@@ -6,13 +6,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import net.validcat.whofirst.util.BitmapUtils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.graphics.Paint.Style;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -28,8 +30,6 @@ import android.widget.TextView;
 
 public class TouchActivity extends Activity {
 	public static final String LOG_TAG = "TouchActivity";
-	// Assume no more than 20 simultaneous touches
-	final private static int MAX_TOUCHES = 20;
 	// Pool of MarkerViews 
 	final private static LinkedList<MarkerView> markersPoll = new LinkedList<MarkerView>();
 	// Set of MarkerViews currently visible on the display
@@ -52,20 +52,16 @@ public class TouchActivity extends Activity {
 	private Vibrator vib;
 	private long[] patternTouch = {0, 100};
 	private long[] patternEnd = {0, 200};
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.touch_activity);
 
 		rnd = new Random();
-		vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		
-		if (vib.hasVibrator()) {
-		    Log.v("Can Vibrate", "YES");
-		} else {
-		    Log.v("Can Vibrate", "NO");
-		}
+		checkSystemServicesEnabled();
+		
 		// Initialize pool of View.
 		initUI();
 		initAnimation();
@@ -97,8 +93,8 @@ public class TouchActivity extends Activity {
 						MarkerView marker = markersPoll.remove();
 						if (marker == null) break;
 						activeMarkers.put(pointerID, marker);
-						marker.setXLoc(event.getX(pointerIndex));
-						marker.setYLoc(event.getY(pointerIndex));
+						marker.setX(event.getX(pointerIndex));
+						marker.setY(event.getY(pointerIndex));
 						frame.addView(marker);
 						vib.vibrate(patternTouch, -1);
 						break;
@@ -129,8 +125,8 @@ public class TouchActivity extends Activity {
 							int ID = event.getPointerId(idx);
 							MarkerView marker = activeMarkers.get(ID);
 							if (marker == null) break;
-							marker.setXLoc(event.getX(idx));
-							marker.setYLoc(event.getY(idx));
+							marker.setX(event.getX(idx));
+							marker.setY(event.getY(idx));
 							marker.invalidate();
 						}
 						break;
@@ -142,6 +138,21 @@ public class TouchActivity extends Activity {
 				return true;
 			}
 		});
+	}
+
+	private void checkSystemServicesEnabled() {
+		vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		
+		if (vib.hasVibrator())  Log.v("System:", "Vibrate: YES");
+		else  					Log.v("System:", "Vibrate: NO");
+		
+		boolean hasMultitouch = getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH);
+		boolean hasMiddle = getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_DISTINCT);
+		boolean hasExternal = getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH_JAZZHAND);
+		
+		if (hasMultitouch && hasMiddle && hasExternal) {
+			Log.v("System:", "Full multitouch support");
+		} else Log.v("System:", "Half multitouch support");
 	}
 
 	private void initAnimation() {
@@ -250,32 +261,50 @@ public class TouchActivity extends Activity {
 		
 		setDeafultState();
 		
+		BitmapUtils utils = new BitmapUtils();
+		int size = (int) getResources().getDimension(R.dimen.circle_size);
+		Bitmap[] chips = utils.loadChipsBitmap(getResources(), size); 
 		// create markers
-		for (int idx = 0; idx < MAX_TOUCHES; idx++)
-			markersPoll.add(new MarkerView(this, -1, -1));
+		for (int i = 0; i < chips.length; i++) {
+//			img = new MarkerView(this);
+//			img.setBackgroundResource(chips[i]);
+//			markersPoll.add(img);
+			markersPoll.add(new MarkerView(this, -1, -1, chips[i], size));
+		}
 	}
 
 	private class MarkerView extends View {
-		private int size = 200;
+		private int size = 0;
 		private float x, y;
 		final private Paint mPaint = new Paint();
+		Bitmap bmp;
+		
+		public MarkerView(Context context, float x, float y, Bitmap bmp, int size) {
+			super(context);
+			this.x = x;
+			this.y = y;
+			this.bmp = bmp;
+			this.size = size / 2;
+//			mPaint.setStyle(Style.FILL);
+		}
 
 		public MarkerView(Context context, float x, float y) {
 			super(context);
 			this.x = x;
 			this.y = y;
-			mPaint.setStyle(Style.FILL);
-			size = (int) getResources().getDimension(R.dimen.circle_size);
-			Random rnd = new Random();
-			mPaint.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+//			mPaint.setStyle(Style.FILL);
+//			size = (int) getResources().getDimension(R.dimen.circle_size);
+//			Random rnd = new Random();
+//			mPaint.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
 		}
 
-		void setXLoc(float x) {this.x = x;}
-		void setYLoc(float y) {this.y = y;}
+		public void setX(float x) {this.x = x - size;}
+		public void setY(float y) {this.y = y - size;}
 
 		@Override
 		protected void onDraw(Canvas canvas) {
-			canvas.drawCircle(x, y, size, mPaint);
+			canvas.drawBitmap(bmp, x, y, mPaint);
+//			canvas.drawCircle(x, y, size, mPaint);
 		}
 	}
 

@@ -12,19 +12,18 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/icon"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="net.validcat.whofirst.MainActivity"
-            android:label="@string/app_name" >
+            android:name="net.validcat.whofirst.TouchActivity"
+            android:label="@string/app_name" android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="net.validcat.whofirst.TouchActivity" android:screenOrientation="landscape" />
     </application>
 
 </manifest>

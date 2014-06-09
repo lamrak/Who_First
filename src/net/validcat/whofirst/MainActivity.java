@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
     
 }
 
-//TODO Funny Font 
+// Funny Font 
 //TODO Graphics
 //TODO XML: Style
 //TODO more than 10 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Кто перший?</string>
+    <string name="title">Кто перший?</string>
+    
+	<string name="hint_start">Доторкніться пальцями до екрану&#8230; та чекайте, відповідь незабаром&#8230;</string>
+
+</resources>
