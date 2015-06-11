@@ -1,4 +1,4 @@
-# who_first
+# Who will be Lucky
 who_first project
 
 Documentation and resources:
