@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/D:/android/repo/git/who_first/app/src/main/res/values-ru/strings.xml -->
+    <eat-comment/>
+    <string name="app_name">Кто первый?</string>
+    <string name="hint_start">Прикоснитесь пальцами к екрану… и ожидайте решения!</string>
+    <string name="title">Кто первый?</string>
+</resources>

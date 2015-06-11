@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="D:\android\repo\git\who_first\app\src\main\assets"><file name="fonts/clicker.ttf" path="D:\android\repo\git\who_first\app\src\main\assets\fonts\clicker.ttf"/><file name="fonts/fredoka.ttf" path="D:\android\repo\git\who_first\app\src\main\assets\fonts\fredoka.ttf"/></source></dataSet><dataSet config="debug"><source path="D:\android\repo\git\who_first\app\src\debug\assets"/></dataSet></merger>

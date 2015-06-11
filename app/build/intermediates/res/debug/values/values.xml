@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/D:/android/repo/git/who_first/app/src/main/res/values/dimens.xml -->
+    <eat-comment/>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="circle_size">120dp</dimen>
+    <!-- From: file:/D:/android/repo/git/who_first/app/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="action_settings">Settings</string>
+    <string name="action_start">Start</string>
+    <string name="app_name">Who is first</string>
+    <string name="company_name">Validcat</string>
+    <string name="hint_start">Just put yours fingers… and wait!</string>
+    <string name="title">Who is first?</string>
+    <!-- From: file:/D:/android/repo/git/who_first/app/src/main/res/values/style.xml -->
+    <eat-comment/>
+    <style name="AppBaseTheme" parent="android:Theme.Holo">
+        <!--item name="android:background">@color/theme_bacground</item>
+        <item name="android:actionBarSize">128dp</item>
+        <item name="android:actionBarStyle">@style/BlackBar</item-->
+    </style>
+    <style name="AppTheme" parent="AppBaseTheme">
+	    <item name="android:windowNoTitle">true</item>
+	    <item name="android:windowFullscreen">true</item>
+	</style>
+    <style name="Button" parent="@android:style/Widget.Button">
+        <item name="android:textSize">48sp</item>
+        <item name="android:textColor">@android:color/white</item> <!-- @color/button_text -->
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:padding">6dp</item>
+    </style>
+</resources>
